@@ -61,7 +61,7 @@ int main()
         printf("Parent: awaiting for child.\n");
     int a[20];
     for (int i=0; i<20; i++)
-        sharedMem[i]=rand(); //Формируем массив случайных чисел
+        sharedMem[i]=rand()%100; //Формируем массив случайных чисел
         waitpid(childId, NULL, 0); //Ждем завершения дочернего процесса
     shmdt(sharedMem); //удаляем разделенную память
     printf("Shared memory is clear.\n");
