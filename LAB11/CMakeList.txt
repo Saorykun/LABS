@@ -1,0 +1,7 @@
+cmake_minimum_required(VERSION 2.8)
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
+set_source_files_properties(client.c PROPERTIES LANGUAGE CXX )
+add_executable(client client.c)
+set_source_files_properties(server.c PROPERTIES LANGUAGE CXX )
+add_executable(server server.c)
