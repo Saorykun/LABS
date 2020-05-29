@@ -19,6 +19,12 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <errno.h>
+#include <csignal>
+
+void terminate(int param) {
+printf("terminated");
+exit(1);
+}
 
 	int main(int argc, char *argv[]) {
 	    int listenfd = 0, connfd = 0;
@@ -34,6 +40,43 @@
 	    serv_addr.sin_port = htons(atoi(argv[1]));
 	    bind(listenfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
 	    listen(listenfd, 10);
+	    void (*funptr)(int);
+	    funptr = signal (SIGTERM, terminate);
+	    int memId = shmget(IPC_PRIVATE, 100*sizeof(pid_t), 0600|IPC_CREAT|IPC_EXCL);
+        if (memId <= 0)
+        {
+    	    printf("error with shmget()\n");
+    	    return -1;
+        }
+        pid_t *mem = (pid_t *)shmat(memId, 0, 0);
+        if (NULL == mem)
+        {
+	        printf("error with shmat()\n");
+	        return -2;
+        }
+	mem[0]=0;
+	    pid_t childId0 = fork();
+	    if (childId0 < 0)
+   		{
+   		     perror("error with fork()\n");
+    		}
+	    else if (childId0 > 0)
+   		 {
+			mem[0]++;
+			mem[mem[0]]=childId0;
+			printf("write 'e' for exit\n");
+			printf("+\n");
+        		char g;
+			do {
+			scanf("%c", &g);
+			} while(g != 'e');
+			for (int i=0; i<=mem[0]; i++)
+			{
+				kill(mem[i], SIGTERM); 
+			}
+			return 0;
+   		 }
+	   else {
 
 	    while(1) {
 	        connfd = accept(listenfd, (struct sockaddr*)NULL, NULL);
@@ -45,6 +88,8 @@
     		}
     		else if (childId > 0)
    		 {
+			mem[0]++;
+			mem[mem[0]]=childId;
 			printf("connect\n");
 			printf("+\n");
         		close(connfd);
@@ -98,4 +143,5 @@
    		 }
 		
 	     }
+	}
 	}
